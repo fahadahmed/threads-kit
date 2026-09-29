@@ -8,7 +8,7 @@ A thin, dependency-free layer exposing the Threads design system's color tokens 
 
 ## Status
 
-- ✅ **Color tokens** — 12 semantic colors, light + dark, ported from the current Threads web palette.
+- ✅ **Color tokens** — 22 semantic colors, light + dark: the 12 ported from the Threads web palette plus 10 taken from the Jamaal design (density ramp, pressed fills, destructive, glass, `onDeep`).
 - ✅ **Shadow** — single elevation value (`--shadow`), color-scheme aware.
 - 🚧 **Typography** — not yet bundled. See [Fonts](#fonts) below for why this isn't a simple port.
 - 🚧 **Spacing / radius scale** — not yet ported from the web system.
@@ -61,14 +61,22 @@ Dark mode requires no branching in your view code — each token resolves to the
 | `Color.Threads.onAccent` | Text/icons placed on top of `accent` |
 | `Color.Threads.terra` | Secondary accent (terracotta) |
 | `Color.Threads.deep` | Deepest elevated surface |
-| `Color.Threads.glassOn` | Tint for glass/blur overlays |
+| `Color.Threads.glassOn` | Opaque fill for selected rows and glass surfaces (the Jamaal design calls this `selected`) |
 | `Color.Threads.line` | Subtle border |
 | `Color.Threads.line2` | Stronger border |
+| `Color.Threads.onDeep` | Text/icons on `deep` (same in both appearances) |
+| `Color.Threads.terraPress` | Pressed fill for `terra` |
+| `Color.Threads.accentPress` | Pressed fill for `accent` |
+| `Color.Threads.d1` / `d2` / `d3` | Density ramp for heatmaps: light / mid / full. Graphics, not text — never put a numeral inside a cell |
+| `Color.Threads.missed` | A closed / missed density cell |
+| `Color.Threads.glass` | Glass material tint (alpha baked in: white 62% light, 9% dark) |
+| `Color.Threads.alert` | Destructive text and icons |
+| `Color.Threads.alertSoft` | Destructive fill — a soft fill with `alert` text, never a filled alert button (only `terra` is filled) |
 | `Color.Threads.focusRing` | Focus indicator — aliased to `accent` |
-| `Color.Threads.pressed(_:)` | Derived pressed/hover state for any base color (opacity blend — no dedicated token exists upstream) |
+| `Color.Threads.pressed(_:)` | Derived pressed state for colors with no dedicated pressed token (opacity blend). Prefer `terraPress` / `accentPress` where they apply |
 | `ThreadsShadow` / `.threadsShadow()` | Single elevation shadow, color-scheme aware |
 
-**Not included, by design:** dedicated success/warning/error/info color tokens. The source palette doesn't define them — plausibly deliberate, consistent with a non-punitive design intent that avoids colored severity signaling. If a consuming app genuinely needs status colors, that's a decision to make explicitly when it comes up, not something to add speculatively here.
+**Status colors:** there are still no success/warning/info tokens, by design — the palette already carries those meanings (success is `accent`, warning is `terra`, a lapsed item is `missed`, info is plain `ink2`), and importing generic red/amber/green would undo the calm. The one addition is `alert` / `alertSoft`, because nothing existing can mean "refused or destructive" (`terra` is the primary action, so a terracotta Drop button would read as the thing to press). Consuming apps that genuinely need more status colors should add them explicitly rather than speculatively.
 
 ## Fonts
 
