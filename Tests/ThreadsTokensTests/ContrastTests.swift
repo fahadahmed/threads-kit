@@ -57,6 +57,10 @@ private func contrast(_ a: RGB, _ b: RGB) -> Double {
     ("ink2", "app"),
     ("ink3", "app"),
     ("terra", "app"),
+    ("onDeep", "deep"),
+    ("alert", "alertSoft"),
+    ("onAccent", "terraPress"),
+    ("onAccent", "accentPress"),
 ], Appearance.allCases)
 private func textPairsClearAA(pair: (String, String), appearance: Appearance) throws {
     let fg = try color(pair.0, appearance)
@@ -72,4 +76,29 @@ private func textPairsClearAA(pair: (String, String), appearance: Appearance) th
     #expect(try color("onAccent", .dark).hex == "16242E")
     #expect(try color("deep", .light).hex == "0C4767")
     #expect(try color("deep", .dark).hex == "071B27")
+}
+
+/// Pins the design values for the tokens added after 1.0.0 (light / dark).
+@Test(arguments: [
+    ("onDeep", "EAF3F6", "EAF3F6"),
+    ("terraPress", "7E3F24", "C08868"),
+    ("accentPress", "175245", "74B3A0"),
+    ("d1", "D3E3DB", "2B4A46"),
+    ("d2", "71A393", "4E7D72"),
+    ("d3", "0C4767", "8FCBB8"),
+    ("missed", "E3BEAB", "6B4A38"),
+    ("alert", "A32E22", "F09A90"),
+    ("alertSoft", "F2D4CE", "5A2A22"),
+])
+private func designTokensMatch(name: String, light: String, dark: String) throws {
+    #expect(try color(name, .light).hex == light)
+    #expect(try color(name, .dark).hex == dark)
+}
+
+@Test func glassIsWhiteWithAppearanceAlpha() throws {
+    let light = try color("glass", .light)
+    let dark = try color("glass", .dark)
+    #expect(light.hex == "FFFFFF" && dark.hex == "FFFFFF")
+    #expect(abs(light.a - 0.62) < 0.001)
+    #expect(abs(dark.a - 0.09) < 0.001)
 }

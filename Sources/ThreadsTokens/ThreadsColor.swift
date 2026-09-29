@@ -26,16 +26,40 @@ public extension Color {
 
         // MARK: Elevation / overlay
         public static let deep    = c("deep")     // deepest elevated surface
-        public static let glassOn = c("glassOn")  // tint for glass/blur overlays
+        public static let glassOn = c("glassOn")  // tint for glass/blur overlays (the Jamaal design calls this `selected`)
 
         // MARK: Border
         // Alpha is baked into the asset itself — apply directly, no extra .opacity().
         public static let line  = c("line")   // subtle border
         public static let line2 = c("line2")  // stronger border
 
+        // MARK: On-surface
+        public static let onDeep = c("onDeep")  // text/icons on `deep`; the same in both appearances
+
+        // MARK: Pressed
+        // A press is a fill change — never movement, never `.opacity()`.
+        public static let terraPress  = c("terraPress")   // pressed fill for terra
+        public static let accentPress = c("accentPress")  // pressed fill for accent
+
+        // MARK: Density (heatmap)
+        // Three filled steps plus a miss. Cells are graphics, not text: never put a numeral in one.
+        public static let d1     = c("d1")      // light
+        public static let d2     = c("d2")      // mid
+        public static let d3     = c("d3")      // full
+        public static let missed = c("missed")  // a closed / missed cell
+
+        // MARK: Glass
+        // Alpha is baked into the asset; the blur itself stays constant.
+        public static let glass = c("glass")    // glass material tint
+
+        // MARK: Destructive
+        // A soft fill with alert-coloured text — never a filled alert button (only terra is filled).
+        public static let alert     = c("alert")
+        public static let alertSoft = c("alertSoft")
+
         // MARK: Derived states (no dedicated token in the source palette)
-        // Pressed/hover: a fixed blend rather than a stored asset, since none
-        // exists upstream. Revisit if the web palette adds one later.
+        // Pressed/hover: a fixed blend for colours that have no dedicated pressed
+        // token. Prefer `terraPress` / `accentPress` where they apply.
         public static func pressed(_ base: Color) -> Color {
             base.opacity(0.85)
         }
