@@ -15,7 +15,7 @@ The source of truth is the Claude Design v4 handoff for Jamaal (the `ThreadsKit 
 - ✅ **Space, radius, hit** — named steps, paddings, radii and the 44 pt target.
 - ✅ **Elevation** — `lift`, `float`, `hair`, including the negative-spread emulation SwiftUI lacks.
 - ✅ **Motion** — 140 ms and 260 ms on one curve, Reduce Motion aware.
-- 🚧 **Typography** — six roles over Hanken Grotesk, Fraunces and JetBrains Mono, with the fonts bundled. Next release.
+- ✅ **Typography** — six roles over Hanken Grotesk, Fraunces and JetBrains Mono, with the fonts bundled (SIL OFL, licences included), registration at launch, and a fixed-digit numeral.
 - ⛔️ **ThreadsUI (components)** — intentionally not started. Begins only once a real Jamaal screen has shipped on tokens alone.
 
 ## Installation
@@ -69,6 +69,23 @@ A palette is a **conformance, not a copy**: `ThreadsPalette` declares every name
 **Derived, not assets:** `line2` (`ink` at 24%), `glassEdge` (`line` in light, white 16% in dark) and `scrim` (`rgba(4,26,38,.32)` light, `rgba(0,0,0,.45)` dark).
 
 **Categories** (Jamaal only): `JamaalPalette.categories` — `accent` (teal), `blue`, `ochre`, `plum`, `slate` — each at least 4.5:1 as text on `app`, `card` and the iPad sidebar. `JamaalPalette.categoryColor(forKey:)` maps a stored key to its colour; an unknown key reads as slate. `terra` is deliberately not a category colour: it carries warning and overload.
+
+## Type
+
+Call `ThreadsFonts.registerAll()` once at launch (it is idempotent and returns any failures), then apply a role with `.threadsType(.body)`. Leading is part of each role and isn't exposed; every role scales with Dynamic Type up to the largest accessibility size, except `label`, which stops at `.xxLarge`.
+
+| Role | Face | pt | Scales with | Leading | Use |
+|---|---|---|---|---|---|
+| `label` | JetBrains Mono 500, tracked 0.16 em, uppercase | 12 | `.caption2` | 1.35 | eyebrows, chip labels, times |
+| `meta` | Hanken Grotesk 400 | 15 | `.subheadline` | 1.35 | a row's secondary line |
+| `body` | Hanken Grotesk 400 | 17 | `.body` | 1.6 | all prose |
+| `row` | Hanken Grotesk 600 | 18 | `.headline` | 1.35 | a task or habit title |
+| `lede` | Hanken Grotesk 400 | 19 | `.callout` | 1.6 | sheet intros, empty states |
+| `display` | Fraunces 500 (SOFT 60, WONK 1) | 28 / 34 / 38 | `.title2` / `.title` / `.largeTitle` | 1.08 | screen titles, the timer numeral |
+
+**The fonts are static instances** cut from the upstream variable fonts (`Scripts/instance-fonts.py`), because SwiftUI can't set a variable font's axes. Fraunces is cut at optical size 36, the middle of the display sizes ("opsz auto" can't be reproduced in a static font). `ThreadsType.displayItalicFontName` is the italic for an emphasised fragment of a display line. All three families are under the SIL Open Font License, with none declaring a Reserved Font Name; the licences ship in `Resources/Fonts`.
+
+**Fraunces has no tabular figures** — its digits differ in width (898 to 1309 units), so `.monospacedDigit()` can't keep a counting timer still. `ThreadsNumeral("12:34")` sets each digit in a cell as wide as the font's widest digit instead; that is the display role's "monospaced digits".
 
 ## Space, elevation, motion
 
