@@ -108,8 +108,9 @@ public struct ThreadsNumeral: View {
         _scaled = ScaledMetric(wrappedValue: CGFloat(spec.pointSize), relativeTo: spec.textStyle)
     }
 
-    /// The width of the widest digit of `fontName` at `pointSize`.
-    public static func digitCellWidth(fontName: String, pointSize: Double) -> Double {
+    /// The width of the widest digit of `fontName` at `pointSize`. Pure Core Text, so `nonisolated`: a `View`'s
+    /// statics are otherwise inferred `@MainActor` by older toolchains (the CI's), which broke the tests there.
+    nonisolated public static func digitCellWidth(fontName: String, pointSize: Double) -> Double {
         ThreadsFonts.registerAll()
         let font = CTFontCreateWithName(fontName as CFString, CGFloat(pointSize), nil)
         var widest = 0.0
