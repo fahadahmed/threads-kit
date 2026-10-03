@@ -28,7 +28,7 @@ private func color(_ name: String, _ appearance: Appearance) throws -> RGB {
         .deletingLastPathComponent()   // Tests
         .deletingLastPathComponent()   // package root
     let url = root.appendingPathComponent(
-        "Sources/ThreadsTokens/Resources/Colors.xcassets/\(name).colorset/Contents.json")
+        "Sources/ThreadsTokens/Resources/Colors-Jamaal.xcassets/\(name).colorset/Contents.json")
     let data = try Data(contentsOf: url)
     let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
     let entries = try #require(json["colors"] as? [[String: Any]])

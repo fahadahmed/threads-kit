@@ -4,95 +4,100 @@ Shared design-token package for the fhdamd.dev product ecosystem — currently c
 
 ## What this is
 
-A thin, dependency-free layer exposing the Threads design system's color tokens as native SwiftUI `Color` values, each with a light and dark appearance baked in via an Xcode asset catalog — not hardcoded hex. This is `ThreadsTokens` only; a `ThreadsUI` component library is planned but not started (see [Status](#status) below).
+A thin, dependency-free layer of design tokens as native SwiftUI values: colours with light and dark baked into an asset catalog, spacing, radii, hit targets, elevation and motion. This is `ThreadsTokens` only; a `ThreadsUI` component library is planned but not started.
 
-## Status
+The source of truth is the Claude Design v4 handoff for Jamaal (the `ThreadsKit Tokens` page and `docs/design/README.md` in the `jamaal-app` repo).
 
-- ✅ **Color tokens** — 22 semantic colors, light + dark: the 12 ported from the Threads web palette plus 10 taken from the Jamaal design (density ramp, pressed fills, destructive, glass, `onDeep`).
-- ✅ **Shadow** — single elevation value (`--shadow`), color-scheme aware.
-- 🚧 **Typography** — not yet bundled. See [Fonts](#fonts) below for why this isn't a simple port.
-- 🚧 **Spacing / radius scale** — not yet ported from the web system.
-- ⛔️ **ThreadsUI (components)** — intentionally not started. Begins only once a real Jamaal screen has shipped on tokens alone, so the component set reflects actual need rather than a guess.
+## Status — 2.0
+
+- ✅ **Palette contract** — a `ThreadsPalette` protocol declaring all 21 names plus four status roles, with `JamaalPalette` as the only conformance.
+- ✅ **Category colours** — five Jamaal-only label colours, outside the palette's names.
+- ✅ **Space, radius, hit** — named steps, paddings, radii and the 44 pt target.
+- ✅ **Elevation** — `lift`, `float`, `hair`, including the negative-spread emulation SwiftUI lacks.
+- ✅ **Motion** — 140 ms and 260 ms on one curve, Reduce Motion aware.
+- 🚧 **Typography** — six roles over Hanken Grotesk, Fraunces and JetBrains Mono, with the fonts bundled. Next release.
+- ⛔️ **ThreadsUI (components)** — intentionally not started. Begins only once a real Jamaal screen has shipped on tokens alone.
 
 ## Installation
 
-In Xcode: **File → Add Package Dependency...** → paste this repo's URL → choose **"Up to Next Major Version"** starting at `1.0.0` → add `ThreadsTokens` to your target.
+In Xcode: **File → Add Package Dependency...** → paste this repo's URL → choose **"Up to Next Major Version"** starting at `2.0.0` → add `ThreadsTokens` to your target.
 
 ```swift
-// Package.swift, if you're adding this to another Swift package
 dependencies: [
-    .package(url: "https://github.com/fahadahmed/threads-kit.git", from: "1.0.0")
+    .package(url: "https://github.com/fahadahmed/threads-kit.git", from: "2.0.0")
 ]
 ```
 
 ## Usage
+
+Views take colours from the palette in the environment, never from a hex or a literal point value:
 
 ```swift
 import SwiftUI
 import ThreadsTokens
 
 struct ExampleCard: View {
+    @Environment(\.threads) private var threads
+
     var body: some View {
         Text("Hello")
-            .foregroundStyle(Color.Threads.ink)
-            .padding()
-            .background(Color.Threads.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.Threads.line, lineWidth: 1)
-            )
-            .threadsShadow()
+            .foregroundStyle(threads.ink)
+            .padding(ThreadsSpace.rowPadding)
+            .background(threads.card, in: RoundedRectangle(cornerRadius: ThreadsRadius.card))
+            .threadsElevation(.lift, in: RoundedRectangle(cornerRadius: ThreadsRadius.card))
     }
 }
 ```
 
-Dark mode requires no branching in your view code — each token resolves to the correct appearance automatically based on the environment's color scheme, the same as any system color like `.primary`.
+`\.threads` defaults to `JamaalPalette()`. Dark mode needs no branching: each colour resolves with the appearance, like a system colour.
 
-## Token reference
+## The palette
 
-| Token | Role |
+A palette is a **conformance, not a copy**: `ThreadsPalette` declares every name, so a product that leaves one out gets a compile error, not a missing colour. Names stay separate even where two values match in one appearance (`terra` / `line`, `accent` / `d3` in dark).
+
+| Name | Role |
 |---|---|
-| `Color.Threads.app` | Page / window background |
-| `Color.Threads.card` | Card, panel, and sheet surfaces |
-| `Color.Threads.ink` | Primary text and icons |
-| `Color.Threads.ink2` | Secondary text |
-| `Color.Threads.ink3` | Tertiary / muted text |
-| `Color.Threads.accent` | Primary accent (teal) |
-| `Color.Threads.onAccent` | Text/icons placed on top of `accent` |
-| `Color.Threads.terra` | Secondary accent (terracotta) |
-| `Color.Threads.deep` | Deepest elevated surface |
-| `Color.Threads.glassOn` | Opaque fill for selected rows and glass surfaces (the Jamaal design calls this `selected`) |
-| `Color.Threads.line` | Subtle border |
-| `Color.Threads.line2` | Stronger border |
-| `Color.Threads.onDeep` | Text/icons on `deep` (same in both appearances) |
-| `Color.Threads.terraPress` | Pressed fill for `terra` |
-| `Color.Threads.accentPress` | Pressed fill for `accent` |
-| `Color.Threads.d1` / `d2` / `d3` | Density ramp for heatmaps: light / mid / full. Graphics, not text — never put a numeral inside a cell |
-| `Color.Threads.missed` | A closed / missed density cell |
-| `Color.Threads.glass` | Glass material tint (alpha baked in: white 62% light, 9% dark) |
-| `Color.Threads.alert` | Destructive text and icons |
-| `Color.Threads.alertSoft` | Destructive fill — a soft fill with `alert` text, never a filled alert button (only `terra` is filled) |
-| `Color.Threads.focusRing` | Focus indicator — aliased to `accent` |
-| `Color.Threads.pressed(_:)` | Derived pressed state for colors with no dedicated pressed token (opacity blend). Prefer `terraPress` / `accentPress` where they apply |
-| `ThreadsShadow` / `.threadsShadow()` | Single elevation shadow, color-scheme aware |
+| `app`, `card`, `deep`, `onDeep`, `selected` | Screen ground · content surface · timer ground · type on it · an opaque selected row |
+| `ink`, `ink2`, `ink3` | Titles · body · labels and meta (the 4.5:1 floor) |
+| `terra`, `terraPress` | The primary action — **the only filled button colour**, one filled button per surface |
+| `accent`, `accentPress`, `onAccent` | Done / settled · type on a filled `terra` or `accent` (flips dark in dark mode: never hardcode white) |
+| `d1`, `d2`, `d3`, `missed` | Habit-grid density and a missed day (not an error) |
+| `line`, `glass` | Hairlines (alpha baked in) · the tint of an action surface |
+| `alert`, `alertSoft` | Destructive **text** and its soft fill — never a filled red button |
+| `success`, `warning`, `lapsed`, `info` | Status roles; default to `accent`, `terra`, `missed`, `ink2` |
 
-**Status colors:** there are still no success/warning/info tokens, by design — the palette already carries those meanings (success is `accent`, warning is `terra`, a lapsed item is `missed`, info is plain `ink2`), and importing generic red/amber/green would undo the calm. The one addition is `alert` / `alertSoft`, because nothing existing can mean "refused or destructive" (`terra` is the primary action, so a terracotta Drop button would read as the thing to press). Consuming apps that genuinely need more status colors should add them explicitly rather than speculatively.
+**Derived, not assets:** `line2` (`ink` at 24%), `glassEdge` (`line` in light, white 16% in dark) and `scrim` (`rgba(4,26,38,.32)` light, `rgba(0,0,0,.45)` dark).
 
-## Fonts
+**Categories** (Jamaal only): `JamaalPalette.categories` — `accent` (teal), `blue`, `ochre`, `plum`, `slate` — each at least 4.5:1 as text on `app`, `card` and the iPad sidebar. `JamaalPalette.categoryColor(forKey:)` maps a stored key to its colour; an unknown key reads as slate. `terra` is deliberately not a category colour: it carries warning and overload.
 
-Not bundled yet. Two things need resolving first, not just a copy-paste port:
+## Space, elevation, motion
 
-1. The display typeface is used at a specific variable-font width axis that Core Text can't set from SwiftUI at runtime — it needs to be **instanced into a static font file** with a font tool before it can be bundled.
-2. **Font licensing must be confirmed** for every typeface before it ships inside the app binary.
+- **Space:** `gutter` 26 · `section` 22 · `row` 14 · `tight` 10 · `hair` 4; row padding 12×14, chip 9×20, pill button 12×20. **Radii:** cell 3, field 8, card 14, pill (a `Capsule`). **Hit:** 44 pt, 28 pt for a Mac pointer; `.threadsHitTarget()`.
+- **Elevation:** `.threadsElevation(.lift | .float | .hair, in: shape)`. `.shadow` can't take a negative spread, so the shadow is cast by the shape inset by it, behind the view.
+- **Motion:** `ThreadsMotion.stateDuration` 140 ms and `surfaceDuration` 260 ms on `cubic-bezier(0, 0, 0.2, 1)`; `.threadsAnimation(.state, value:)` honours Reduce Motion (both become instant).
+
+## Known gap in the design
+
+`ink3` on the **dark** `selected` row is 4.4965:1, 0.0035 short of AA (it is fine everywhere else). A test pins it, so when Design nudges either colour the test fails and the pair joins the AA list.
+
+## Migrating from 1.x (a major release)
+
+| 1.x | 2.0 |
+|---|---|
+| `Color.Threads.ink` etc. | `@Environment(\.threads).ink` (or `JamaalPalette().ink`) |
+| `Color.Threads.glassOn` | `selected` |
+| `Color.Threads.line2` | `palette.line2` (derived) |
+| `Color.Threads.focusRing`, `.pressed(_:)` | removed: use `accent` and the `*Press` colours |
+| `ThreadsShadow`, `.threadsShadow()` | `.threadsElevation(_:in:)` |
 
 ## Versioning
 
 Semantic versioning, strictly:
-- **Patch** (`1.0.x`) — bug fixes, no API change.
-- **Minor** (`1.x.0`) — additive, non-breaking (e.g. a new color token).
-- **Major** (`x.0.0`) — anything that renames or removes an existing token. The move from the previous ceramic palette (bone/terracotta/sage/charcoal) to the current cool palette (teal accent, blue-based ink) is exactly the kind of change that warrants a major bump.
+- **Patch** (`x.y.z`) — bug fixes, no API change.
+- **Minor** — additive, non-breaking (a new colour, a new role).
+- **Major** — anything that renames or removes an existing token. `2.0.0` is exactly that: the contract moved from `Color.Threads` to a palette protocol.
 
-Since Jamaal, Riqa, and Hashiya will all depend on this package, a major version bump means checking and updating all three consumers deliberately — don't let them drift onto different major versions of the palette unintentionally.
+Jamaal, Riqa and Hashiya will all depend on this package, so a major bump means checking and updating all three deliberately.
 
 ## Contributing / local development
 
@@ -103,7 +108,7 @@ swift build
 swift test
 ```
 
-`Package.swift` can also be opened directly in Xcode for standalone builds, tests, and SwiftUI previews — no consuming app required.
+`Package.swift` can also be opened directly in Xcode for standalone builds, tests and SwiftUI previews.
 
 ## License
 
